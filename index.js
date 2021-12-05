@@ -3,6 +3,9 @@ const app = express();
 const findWhat = require('./utils/findWhat');
 const idGenerator = require('./utils/idGenerator');
 const morgan = require('morgan');
+const cors = require('cors');
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -117,7 +120,7 @@ const unknownEndpoint = (req, res) => {
 };
 app.use(unknownEndpoint);
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
