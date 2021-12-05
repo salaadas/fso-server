@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const findWhat = require('./utils/findWhat');
+const idGenerator = require('./utils/idGenerator');
 
 app.use(express.json());
 
@@ -24,52 +26,92 @@ let notes = [
   },
 ];
 
+let persons = [
+  {
+    id: 1,
+    name: 'Arto Hellas',
+    number: '040-123456',
+  },
+  {
+    id: 2,
+    name: 'Ada Lovelace',
+    number: '39-44-5323523',
+  },
+  {
+    id: 3,
+    name: 'Dan Abramov',
+    number: '12-43-234345',
+  },
+  {
+    id: 4,
+    name: 'Mary Poppendieck',
+    number: '39-23-6423122',
+  },
+];
+
 app.get('/', (_, res) => {
   res.send('hello world');
 });
 
-app.get('/api/notes', (_, res) => {
-  res.json(notes);
+app.get('/api/persons', (_, res) => {
+  res.json(persons);
 });
 
-app.get('/api/notes/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const note = notes.find((note) => note.id === id);
-  note ? res.json(note) : res.status(404).end();
+app.get('/info', (_, res) => {
+  const numbersOfPeople = persons.length;
+  const date = new Date().toString();
+
+  res.send(`
+  <div>
+    <p>Phonebook has info for ${numbersOfPeople} people</p>
+    <p>${date}</p>
+  </div>
+  `);
 });
 
-const generateId = () => {
-  const maxId =
-    notes.length > 0 ? Math.max(...notes.map((note) => note.id)) : 0;
-  return maxId;
-};
+app.get('/api/persons/:id', (req, res) => {
+  const person = findWhat(req.params.id, persons);
+  if (!person) {
+    res.status(404).end();
+  }
+  res.json(person);
+});
 
-app.post('/api/notes', (req, res) => {
+app.delete('/api/persons/:id', (req, res) => {
+  const id = req.params.id;
+  persons = persons.filter((p) => p.id !== id);
+  res.status(204).end();
+});
+
+app.post('/api/persons', (req, res) => {
   const body = req.body;
-  if (!body.content) {
-    return res.status(400).json({
-      error: 'content missing',
-    });
+  if (!body.name || !body.number) {
+    res.status(404);
+    res.json({ error: 'must provide name and number' });
+    res.end();
+  }
+  if (persons.map((p) => p.name).includes(body.name)) {
+    res.status(404);
+    res.json({ error: 'name must be unique' });
+    res.end();
   }
 
-  const note = {
-    id: generateId(),
-    content: body.content,
-    important: body.important || false,
-    date: new Date(),
+  const id = idGenerator(
+    [persons.length, persons.length * 2],
+    persons.map((p) => p.id)
+  );
+
+  const newPerson = {
+    id,
+    name: body.name,
+    number: body.number,
   };
 
-  notes = notes.concat([note]);
-  res.json(note);
-});
-
-app.delete('/api/notes/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  notes = notes.filter((note) => note.id !== id);
-  res.status(204).end();
+  persons = persons.concat([newPerson]);
+  res.json(newPerson);
 });
 
 const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`App listening on PORT ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
