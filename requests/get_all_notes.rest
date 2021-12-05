@@ -1,0 +1,10 @@
+POST  http://localhost:3001/api/notes/
+Content-Type: application/json
+
+{
+  "name": "testing",
+  "hello": "world"
+}
+
+### 
+GET http://localhost:3001/notes
