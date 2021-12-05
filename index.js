@@ -2,8 +2,17 @@ const express = require('express');
 const app = express();
 const findWhat = require('./utils/findWhat');
 const idGenerator = require('./utils/idGenerator');
+const morgan = require('morgan');
 
 app.use(express.json());
+
+morgan.token('body', (req, _) => {
+  return JSON.stringify(req.body);
+});
+
+app.use(
+  morgan(':method :url :status :res[content-length] - :response-time ms :body')
+);
 
 let notes = [
   {
@@ -71,9 +80,6 @@ app.get('/info', (_, res) => {
 
 app.get('/api/persons/:id', (req, res) => {
   const person = findWhat(req.params.id, persons);
-  if (!person) {
-    res.status(404).end();
-  }
   res.json(person);
 });
 
@@ -86,14 +92,10 @@ app.delete('/api/persons/:id', (req, res) => {
 app.post('/api/persons', (req, res) => {
   const body = req.body;
   if (!body.name || !body.number) {
-    res.status(404);
-    res.json({ error: 'must provide name and number' });
-    res.end();
+    res.status(404).res.end({ error: 'must provide name and number' });
   }
   if (persons.map((p) => p.name).includes(body.name)) {
-    res.status(404);
-    res.json({ error: 'name must be unique' });
-    res.end();
+    res.status(404).end({ error: 'name must be unique' });
   }
 
   const id = idGenerator(
@@ -103,13 +105,17 @@ app.post('/api/persons', (req, res) => {
 
   const newPerson = {
     id,
-    name: body.name,
-    number: body.number,
+    ...body,
   };
 
   persons = persons.concat([newPerson]);
   res.json(newPerson);
 });
+
+const unknownEndpoint = (req, res) => {
+  res.status(404).send({ error: 'unknown endpoint' });
+};
+app.use(unknownEndpoint);
 
 const PORT = 3001;
 app.listen(PORT, () => {
