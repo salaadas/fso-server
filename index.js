@@ -95,7 +95,7 @@ app.delete('/api/persons/:id', (req, res) => {
 app.post('/api/persons', (req, res) => {
   const body = req.body;
   if (!body.name || !body.number) {
-    res.status(404).res.end({ error: 'must provide name and number' });
+    res.status(404).end({ error: 'must provide name and number' });
   }
   if (persons.map((p) => p.name).includes(body.name)) {
     res.status(404).end({ error: 'name must be unique' });
@@ -113,6 +113,13 @@ app.post('/api/persons', (req, res) => {
 
   persons = persons.concat([newPerson]);
   res.json(newPerson);
+});
+
+app.put('/api/persons/:id', (req, res) => {
+  const id = req.params.id;
+  const body = req.body;
+  persons = persons.map((p) => (p.id === id ? { ...p, ...body } : p));
+  res.json(body);
 });
 
 const unknownEndpoint = (_, res) => {
