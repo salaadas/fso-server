@@ -4,6 +4,8 @@ const findWhat = require('./utils/findWhat');
 const idGenerator = require('./utils/idGenerator');
 const morgan = require('morgan');
 const cors = require('cors');
+require('dotenv').config();
+const Person = require('./models/person');
 
 app.use(cors());
 
@@ -19,7 +21,7 @@ app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :body')
 );
 
-let notes = [
+const notes = [
   {
     id: 1,
     content: 'HTML is easy',
@@ -40,7 +42,7 @@ let notes = [
   },
 ];
 
-let persons = [
+const persons = [
   {
     id: 1,
     name: 'Arto Hellas',
@@ -68,11 +70,13 @@ app.get('/', (_, res) => {
 });
 
 app.get('/api/persons', (_, res) => {
-  res.json(persons);
+  Person.find({}).then((p) => {
+    res.json(p);
+  });
 });
 
 app.get('/info', (_, res) => {
-  const numbersOfPeople = persons.length;
+  const numbersOfPeople = Person.length;
   const date = new Date().toString();
 
   res.send(`
@@ -84,14 +88,15 @@ app.get('/info', (_, res) => {
 });
 
 app.get('/api/persons/:id', (req, res) => {
-  const person = findWhat(req.params.id, persons);
-  res.json(person);
+  Person.findById(req.params.id).then((person) => {
+    res.json(person);
+  });
 });
 
 app.delete('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  persons = persons.filter((p) => p.id !== id);
-  res.status(204).end();
+  Person.findByIdAndDelete(req.params.id).then(() => {
+    res.status(204).end();
+  });
 });
 
 app.post('/api/persons', (req, res) => {
@@ -99,29 +104,19 @@ app.post('/api/persons', (req, res) => {
   if (!body.name || !body.number) {
     res.status(404).end({ error: 'must provide name and number' });
   }
-  if (persons.map((p) => p.name).includes(body.name)) {
-    res.status(404).end({ error: 'name must be unique' });
-  }
 
-  const id = idGenerator(
-    [persons.length, persons.length * 2],
-    persons.map((p) => p.id)
-  );
+  // if (persons.map((p) => p.name).includes(body.name)) {
+  //   res.status(404).end({ error: 'name must be unique' });
+  // }
 
-  const newPerson = {
-    id,
-    ...body,
-  };
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  });
 
-  persons = persons.concat([newPerson]);
-  res.json(newPerson);
-});
-
-app.put('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  const body = req.body;
-  persons = persons.map((p) => (p.id === id ? { ...p, ...body } : p));
-  res.json(body);
+  person.save().then((savedPerson) => {
+    res.json(savedPerson);
+  });
 });
 
 const unknownEndpoint = (_, res) => {
