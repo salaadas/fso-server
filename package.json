@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "watch": "nodemon index.js"
+    "watch": "nodemon index.js",
+    "build:ui": "rm -rf build && cd ../../part-2/my-app/ && yarn build --prod && cp -r build ../../part-3/my-node/",
+    "deploy": "git push heroku master",
+    "deploy:full": "yarn build:ui && git add . && git commit -m uibuild && git push origin master && yarn deploy",
+    "logs:prod": "heroku logs --tail"
   },
   "keywords": [],
   "author": "",
