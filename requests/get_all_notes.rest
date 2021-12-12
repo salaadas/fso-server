@@ -10,7 +10,13 @@ Content-Type: application/json
 GET http://localhost:3001/api/persons
 
 ###
-DELETE http://localhost:3001/api/persons/61af17d86e3e7a32db8620f8
+DELETE http://localhost:3001/api/persons/61af10e91b6a0f2803ebec0c
 
 ### 
-GET http://localhost:3001/api/persons/2
+PUT http://localhost:3001/api/persons/61b54a293ac8e936224aa211
+Content-Type: application/javascript
+
+{
+  "name": "neru", 
+  "number": "lskf"
+}
