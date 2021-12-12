@@ -21,7 +21,19 @@ const main = async () => {
 
   const Note = mongoose.model('Note', noteSchema);
 
-  const allNotes = await Note.find({ important: false });
+  const myNote = new Note({
+    content: 'eoivweo',
+    date: new Date().toISOString(),
+    important: true,
+  });
+
+  myNote
+    .save()
+    .then((saved) => saved.toJSON())
+    .then((savedAndFormatted) => {
+      res.json(savedAndFormatted);
+    })
+    .catch((err) => next(err));
 
   console.log('all notes', allNotes);
 };

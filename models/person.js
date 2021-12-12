@@ -8,8 +8,15 @@ mongoose
   .catch((e) => console.error(e.message));
 
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minlength: 3,
+    required: true,
+  },
+  number: {
+    type: String,
+    required: true,
+  },
 });
 
 personSchema.set('toJSON', {
