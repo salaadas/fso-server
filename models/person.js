@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 require('dotenv').config();
 
 const url = `mongodb+srv://super:${process.env.PW}@my-cluster.ew0ya.mongodb.net/phone-book?retryWrites=true&w=majority`;
@@ -12,12 +13,16 @@ const personSchema = new mongoose.Schema({
     type: String,
     minlength: 3,
     required: true,
+    unique: true,
   },
   number: {
     type: String,
+    minlength: 8,
     required: true,
   },
 });
+
+personSchema.plugin(uniqueValidator);
 
 personSchema.set('toJSON', {
   transform: (document, returnedObject) => {

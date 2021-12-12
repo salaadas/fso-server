@@ -72,7 +72,9 @@ app.post('/api/persons', (req, res, next) => {
   });
 
   person
-    .save()
+    .save((err) => {
+      throw err;
+    })
     .then((savedPerson) => {
       res.json(savedPerson);
     })
